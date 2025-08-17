@@ -28,30 +28,38 @@
     </form>
 
     <script>
+      // Get cart from localStorage
       const cart = JSON.parse(localStorage.getItem("checkoutCart")) || [];
       const cartItemsEl = document.getElementById("cartItems");
       const cartTotalEl = document.getElementById("cartTotal");
 
       // Display cart items
       let total = 0;
-      cart.forEach((item) => {
-        const li = document.createElement("li");
-        li.textContent = `${item.name} x ${item.quantity} - $${(
-          item.price * item.quantity
-        ).toFixed(2)}`;
-        cartItemsEl.appendChild(li);
-        total += item.price * item.quantity;
-      });
+      if (cart.length === 0) {
+        cartItemsEl.innerHTML = "<li>Your cart is empty.</li>";
+      } else {
+        cart.forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = `${item.name} x ${item.quantity} - $${(
+            item.price * item.quantity
+          ).toFixed(2)}`;
+          cartItemsEl.appendChild(li);
+          total += item.price * item.quantity;
+        });
+      }
       cartTotalEl.textContent = total.toFixed(2);
 
-      // Use Render backend URL
-      const BACKEND_URL = "https://homesteadingwithtiffany.onrender.com";
+      // Determine backend URL (works locally or on Render)
+      const BACKEND_URL = window.location.hostname.includes("localhost")
+        ? "http://localhost:5000"
+        : "";
 
-      // Handle form submission
+      // Handle checkout form submission
       document
         .getElementById("checkoutForm")
-        .addEventListener("submit", function (e) {
+        .addEventListener("submit", async (e) => {
           e.preventDefault();
+
           if (cart.length === 0) {
             alert("Your cart is empty!");
             return;
@@ -61,29 +69,28 @@
             customerName: document.getElementById("customerName").value,
             customerEmail: document.getElementById("customerEmail").value,
             items: cart,
-            total: total,
+            total,
           };
 
-          fetch(`${BACKEND_URL}/api/orders`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(orderData),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              alert(data.message || "Order placed successfully!");
-              localStorage.removeItem("cart");
-              localStorage.removeItem("checkoutCart");
-              window.location.href = "shop.html"; // redirect to shop
-            })
-            .catch((err) => {
-              console.error("Error placing order:", err);
-              alert(
-                "There was an error placing your order. Please try again later."
-              );
+          try {
+            const res = await fetch(`${BACKEND_URL}/api/orders`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(orderData),
             });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Order failed");
+
+            alert(data.message || "Order placed successfully!");
+            localStorage.removeItem("checkoutCart");
+            window.location.href = "shop.html"; // Redirect to shop
+          } catch (err) {
+            console.error("Error placing order:", err);
+            alert(
+              "There was an error placing your order. Please try again later."
+            );
+          }
         });
     </script>
   </body>

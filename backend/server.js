@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Serve frontend files from main project folder
+// Serve frontend static files (adjust path if your frontend is in a different folder)
 app.use(express.static(path.join(__dirname, "../")));
 
 // Database setup
@@ -47,10 +47,7 @@ const db = new sqlite3.Database(path.join(__dirname, "shop.db"), (err) => {
   }
 });
 
-// Routes
-app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
-});
+// API Routes
 
 // Get all products
 app.get("/api/products", (req, res) => {
@@ -80,7 +77,7 @@ app.put("/api/products/:id", (req, res) => {
   db.run(
     "UPDATE products SET name = ?, description = ?, price = ?, category = ?, image = ? WHERE id = ?",
     [name, description, price, category, image, id],
-    function(err) {
+    function (err) {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ message: "Product updated successfully!" });
     }
@@ -100,14 +97,14 @@ app.post("/api/orders", (req, res) => {
   db.run(
     "INSERT INTO orders (customerName, customerEmail, items, total, createdAt) VALUES (?, ?, ?, ?, ?)",
     [customerName, customerEmail, JSON.stringify(items), total, createdAt],
-    function(err) {
+    function (err) {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ orderId: this.lastID, message: "Order placed successfully!" });
     }
   );
 });
 
-// Catch-all to serve frontend for React / single-page routing
+// Catch-all route for frontend (for SPA routing)
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../index.html"));
 });
