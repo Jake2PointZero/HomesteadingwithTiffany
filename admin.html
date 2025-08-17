@@ -94,44 +94,46 @@
     <script>
       const tableBody = document.querySelector("#productsTable tbody");
 
-      // Fetch and display products
-      function loadProducts() {
-        fetch("/api/products")
-          .then((res) => res.json())
-          .then((products) => {
-            tableBody.innerHTML = "";
-            products.forEach((p) => {
-              const tr = document.createElement("tr");
-              tr.innerHTML = `
-                <td>${p._id.slice(0, 8)}</td>
-                <td contenteditable="true" data-field="name">${p.name}</td>
-                <td contenteditable="true" data-field="description">${
-                  p.description
-                }</td>
-                <td contenteditable="true" data-field="price">${p.price}</td>
-                <td contenteditable="true" data-field="category">${
-                  p.category
-                }</td>
-                <td contenteditable="true" data-field="image">${p.image}</td>
-                <td>
-                  <button onclick="updateProduct('${
-                    p._id
-                  }', this)">Save</button>
-                  <button onclick="deleteProduct('${p._id}')">Delete</button>
-                </td>
-              `;
-              tableBody.appendChild(tr);
-            });
-          })
-          .catch((err) => console.error("Error loading products:", err));
+      // --- Fetch and display products ---
+      async function loadProducts() {
+        try {
+          const res = await fetch("/api/products");
+          const products = await res.json();
+
+          tableBody.innerHTML = "";
+
+          products.forEach((p) => {
+            const tr = document.createElement("tr");
+
+            // Display only first 8 chars of ID for readability
+            const shortId = p._id.slice(0, 8);
+
+            tr.innerHTML = `
+          <td>${shortId}</td>
+          <td contenteditable="true" data-field="name">${p.name}</td>
+          <td contenteditable="true" data-field="description">${p.description}</td>
+          <td contenteditable="true" data-field="price">${p.price}</td>
+          <td contenteditable="true" data-field="category">${p.category}</td>
+          <td contenteditable="true" data-field="image">${p.image}</td>
+          <td>
+            <button onclick="updateProduct('${p._id}', this)">Save</button>
+            <button onclick="deleteProduct('${p._id}')">Delete</button>
+          </td>
+        `;
+
+            tableBody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error("Error loading products:", err);
+        }
       }
 
       loadProducts();
 
-      // Add new product
+      // --- Add new product ---
       document
         .getElementById("addProductForm")
-        .addEventListener("submit", function (e) {
+        .addEventListener("submit", async function (e) {
           e.preventDefault();
           const data = {
             name: document.getElementById("name").value,
@@ -141,24 +143,25 @@
             image: document.getElementById("image").value,
           };
 
-          fetch("/api/products", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-          })
-            .then((res) => res.json())
-            .then(() => {
-              alert("Product added!");
-              loadProducts();
-              this.reset();
-            })
-            .catch((err) => console.error("Error adding product:", err));
+          try {
+            await fetch("/api/products", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+            alert("Product added!");
+            this.reset();
+            loadProducts();
+          } catch (err) {
+            console.error("Error adding product:", err);
+          }
         });
 
-      // Update product
-      function updateProduct(id, btn) {
+      // --- Update product ---
+      async function updateProduct(id, btn) {
         const row = btn.parentElement.parentElement;
         const updatedData = {};
+
         row.querySelectorAll("[contenteditable]").forEach((td) => {
           const field = td.dataset.field;
           let value = td.textContent;
@@ -166,32 +169,30 @@
           updatedData[field] = value;
         });
 
-        fetch(`/api/products/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedData),
-        })
-          .then((res) => res.json())
-          .then(() => {
-            alert("Product updated!");
-            loadProducts();
-          })
-          .catch((err) => console.error("Error updating product:", err));
+        try {
+          await fetch(`/api/products/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedData),
+          });
+          alert("Product updated!");
+          loadProducts();
+        } catch (err) {
+          console.error("Error updating product:", err);
+        }
       }
 
-      // Delete product
-      function deleteProduct(id) {
+      // --- Delete product ---
+      async function deleteProduct(id) {
         if (!confirm("Are you sure you want to delete this product?")) return;
 
-        fetch(`/api/products/${id}`, {
-          method: "DELETE",
-        })
-          .then((res) => res.json())
-          .then(() => {
-            alert("Product deleted!");
-            loadProducts();
-          })
-          .catch((err) => console.error("Error deleting product:", err));
+        try {
+          await fetch(`/api/products/${id}`, { method: "DELETE" });
+          alert("Product deleted!");
+          loadProducts();
+        } catch (err) {
+          console.error("Error deleting product:", err);
+        }
       }
     </script>
   </body>
