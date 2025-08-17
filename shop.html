@@ -14,7 +14,7 @@
     </nav>
 
     <!-- Header -->
-    <h1>Welcome to My Shop</h1>
+    <h1>Homesteading With Tiffany!</h1>
 
     <!-- Hero Banner -->
     <section class="hero-banner">
@@ -27,7 +27,9 @@
 
     <!-- Category Buttons -->
     <div class="category-buttons">
-      <button class="category-btn" onclick="filterCategory('All')">All</button>
+      <button class="category-btn active" onclick="filterCategory('All')">
+        All
+      </button>
       <button class="category-btn" onclick="filterCategory('Candles')">
         Candles
       </button>
@@ -49,16 +51,14 @@
     </div>
 
     <!-- Products Grid -->
-    <div class="products-grid" id="productsGrid">
-      <!-- Products will be loaded here -->
-    </div>
+    <div class="products-grid" id="productsGrid"></div>
 
     <script>
       let allProducts = [];
 
       // Fetch products from backend
       fetch("http://localhost:5000/api/products")
-        .then((response) => response.json())
+        .then((res) => res.json())
         .then((products) => {
           allProducts = products;
           renderProducts(products);
@@ -68,16 +68,16 @@
       function renderProducts(products) {
         const grid = document.getElementById("productsGrid");
         grid.innerHTML = "";
-        products.forEach((product) => {
+        products.forEach((p) => {
           const card = document.createElement("div");
           card.className = "product-card";
           card.innerHTML = `
-          <img src="${product.image}" alt="${product.name}">
-          <h3>${product.name}</h3>
-          <p>${product.description}</p>
-          <div class="price">$${product.price.toFixed(2)}</div>
-          <button onclick="addToCart(${product.id})">Add to Cart</button>
-        `;
+            <img src="${p.image}" alt="${p.name}" />
+            <h3>${p.name}</h3>
+            <p>${p.description}</p>
+            <div class="price">$${p.price.toFixed(2)}</div>
+            <button onclick="addToCart(${p.id})">Add to Cart</button>
+          `;
           grid.appendChild(card);
         });
       }
@@ -100,7 +100,6 @@
         }
       }
 
-      // Add to Cart
       function addToCart(productId) {
         const product = allProducts.find((p) => p.id === productId);
         if (!product) return;
