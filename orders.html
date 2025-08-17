@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Orders</title>
     <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      .orders-table-container {
+        width: 95%;
+        max-width: 1000px;
+        margin: auto;
+        overflow-x: auto;
+      }
+      .cart-table th,
+      .cart-table td {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        text-align: center;
+      }
+      .cart-table th {
+        background-color: #ff7f50;
+        color: white;
+      }
+    </style>
   </head>
   <body>
     <nav style="text-align: center; margin-bottom: 20px">
@@ -34,33 +52,30 @@
     </div>
 
     <script>
-      fetch(`/api/orders`)
+      fetch("/api/orders")
         .then((res) => res.json())
         .then((orders) => {
           const tbody = document.querySelector("#ordersTable tbody");
           orders.forEach((order) => {
             const tr = document.createElement("tr");
 
-            // Convert JSON string of items into readable list
-            let itemsList = "";
-            try {
-              const items = JSON.parse(order.items);
-              itemsList = items
-                .map((i) => `${i.name} x ${i.quantity}`)
-                .join(", ");
-            } catch (e) {
-              itemsList = order.items;
-            }
+            // Use MongoDB _id
+            const orderId = order._id.slice(0, 8);
+
+            // Items are already objects, no need to JSON.parse
+            const itemsList = order.items
+              .map((i) => `${i.name} x ${i.quantity}`)
+              .join(", ");
 
             tr.innerHTML = `
-            <td>${order.id}</td>
-            <td>${order.customerName}</td>
-            <td>${order.customerEmail}</td>
-            <td>${order.address}</td>
-            <td>$${order.total.toFixed(2)}</td>
-            <td>${new Date(order.createdAt).toLocaleString()}</td>
-            <td>${itemsList}</td>
-          `;
+              <td>${orderId}</td>
+              <td>${order.customerName}</td>
+              <td>${order.customerEmail}</td>
+              <td>${order.address}</td>
+              <td>$${order.total.toFixed(2)}</td>
+              <td>${new Date(order.createdAt).toLocaleString()}</td>
+              <td>${itemsList}</td>
+            `;
             tbody.appendChild(tr);
           });
         })
