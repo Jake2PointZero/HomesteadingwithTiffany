@@ -28,38 +28,27 @@
     </form>
 
     <script>
-      // Get cart from localStorage
       const cart = JSON.parse(localStorage.getItem("checkoutCart")) || [];
       const cartItemsEl = document.getElementById("cartItems");
       const cartTotalEl = document.getElementById("cartTotal");
 
       // Display cart items
       let total = 0;
-      if (cart.length === 0) {
-        cartItemsEl.innerHTML = "<li>Your cart is empty.</li>";
-      } else {
-        cart.forEach((item) => {
-          const li = document.createElement("li");
-          li.textContent = `${item.name} x ${item.quantity} - $${(
-            item.price * item.quantity
-          ).toFixed(2)}`;
-          cartItemsEl.appendChild(li);
-          total += item.price * item.quantity;
-        });
-      }
+      cart.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = `${item.name} x ${item.quantity} - $${(
+          item.price * item.quantity
+        ).toFixed(2)}`;
+        cartItemsEl.appendChild(li);
+        total += item.price * item.quantity;
+      });
       cartTotalEl.textContent = total.toFixed(2);
 
-      // Determine backend URL (works locally or on Render)
-      const BACKEND_URL = window.location.hostname.includes("localhost")
-        ? "http://localhost:5000"
-        : "";
-
-      // Handle checkout form submission
+      // Handle form submission
       document
         .getElementById("checkoutForm")
-        .addEventListener("submit", async (e) => {
+        .addEventListener("submit", function (e) {
           e.preventDefault();
-
           if (cart.length === 0) {
             alert("Your cart is empty!");
             return;
@@ -69,28 +58,27 @@
             customerName: document.getElementById("customerName").value,
             customerEmail: document.getElementById("customerEmail").value,
             items: cart,
-            total,
+            total: total,
           };
 
-          try {
-            const res = await fetch(`${BACKEND_URL}/api/orders`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(orderData),
+          fetch("http://localhost:5000/api/orders", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(orderData),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              alert(data.message || "Order placed successfully!");
+              localStorage.removeItem("cart");
+              localStorage.removeItem("checkoutCart");
+              window.location.href = "shop.html"; // redirect to shop
+            })
+            .catch((err) => {
+              console.error("Error placing order:", err);
+              alert("There was an error placing your order. Please try again.");
             });
-            const data = await res.json();
-
-            if (!res.ok) throw new Error(data.error || "Order failed");
-
-            alert(data.message || "Order placed successfully!");
-            localStorage.removeItem("checkoutCart");
-            window.location.href = "shop.html"; // Redirect to shop
-          } catch (err) {
-            console.error("Error placing order:", err);
-            alert(
-              "There was an error placing your order. Please try again later."
-            );
-          }
         });
     </script>
   </body>
