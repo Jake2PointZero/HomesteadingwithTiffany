@@ -44,6 +44,9 @@
       });
       cartTotalEl.textContent = total.toFixed(2);
 
+      // Use Render backend URL
+      const BACKEND_URL = "https://homesteadingwithtiffany.onrender.com";
+
       // Handle form submission
       document
         .getElementById("checkoutForm")
@@ -61,7 +64,7 @@
             total: total,
           };
 
-          fetch("http://localhost:5000/api/orders", {
+          fetch(`${BACKEND_URL}/api/orders`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -77,7 +80,9 @@
             })
             .catch((err) => {
               console.error("Error placing order:", err);
-              alert("There was an error placing your order. Please try again.");
+              alert(
+                "There was an error placing your order. Please try again later."
+              );
             });
         });
     </script>
