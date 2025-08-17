@@ -95,24 +95,25 @@
 
       // Fetch and display products
       function loadProducts() {
-        fetch("api/products")
+        fetch("/api/products")
           .then((res) => res.json())
           .then((products) => {
             tableBody.innerHTML = "";
             products.forEach((p) => {
               const tr = document.createElement("tr");
               tr.innerHTML = `
-              <td>${p.id}</td>
-              <td contenteditable="true" data-field="name">${p.name}</td>
-              <td contenteditable="true" data-field="description">${p.description}</td>
-              <td contenteditable="true" data-field="price">${p.price}</td>
-              <td contenteditable="true" data-field="category">${p.category}</td>
-              <td contenteditable="true" data-field="image">${p.image}</td>
-              <td><button onclick="updateProduct(${p.id}, this)">Save</button></td>
-            `;
+                <td>${p.id}</td>
+                <td contenteditable="true" data-field="name">${p.name}</td>
+                <td contenteditable="true" data-field="description">${p.description}</td>
+                <td contenteditable="true" data-field="price">${p.price}</td>
+                <td contenteditable="true" data-field="category">${p.category}</td>
+                <td contenteditable="true" data-field="image">${p.image}</td>
+                <td><button onclick="updateProduct(${p.id}, this)">Save</button></td>
+              `;
               tableBody.appendChild(tr);
             });
-          });
+          })
+          .catch((err) => console.error("Error loading products:", err));
       }
 
       loadProducts();
@@ -130,7 +131,7 @@
             image: document.getElementById("image").value,
           };
 
-          fetch("http://localhost:5000/api/products", {
+          fetch("/api/products", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -140,7 +141,8 @@
               alert("Product added!");
               loadProducts();
               this.reset();
-            });
+            })
+            .catch((err) => console.error("Error adding product:", err));
         });
 
       // Update product
@@ -154,7 +156,7 @@
           updatedData[field] = value;
         });
 
-        fetch(`http://localhost:5000/api/products/${id}`, {
+        fetch(`/api/products/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updatedData),
@@ -163,7 +165,8 @@
           .then(() => {
             alert("Product updated!");
             loadProducts();
-          });
+          })
+          .catch((err) => console.error("Error updating product:", err));
       }
     </script>
   </body>
