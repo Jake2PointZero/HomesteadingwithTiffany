@@ -76,7 +76,7 @@
             <h3>${p.name}</h3>
             <p>${p.description}</p>
             <div class="price">$${p.price.toFixed(2)}</div>
-            <button onclick="addToCart(${p.id})">Add to Cart</button>
+            <button onclick="addToCart('${p._id}')">Add to Cart</button>
           `;
           grid.appendChild(card);
         });
@@ -101,11 +101,11 @@
       }
 
       function addToCart(productId) {
-        const product = allProducts.find((p) => p.id === productId);
+        const product = allProducts.find((p) => p._id === productId);
         if (!product) return;
 
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
-        const existingItem = cart.find((item) => item.id === product.id);
+        const existingItem = cart.find((item) => item._id === product._id);
         if (existingItem) {
           existingItem.quantity += 1;
         } else {
