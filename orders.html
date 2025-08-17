@@ -6,50 +6,128 @@
     <title>Orders</title>
     <link rel="stylesheet" href="css/styles.css" />
     <style>
-      .orders-table-container {
-        width: 95%;
-        max-width: 1000px;
-        margin: auto;
-        overflow-x: auto;
+      body {
+        font-family: Arial, sans-serif;
+        padding: 10px;
       }
+
+      nav {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      nav a {
+        margin: 0 5px;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      /* Table for desktop */
+      .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
       .cart-table th,
       .cart-table td {
-        padding: 8px 12px;
+        padding: 6px 10px;
         border: 1px solid #ccc;
         text-align: center;
       }
+
       .cart-table th {
         background-color: #ff7f50;
         color: white;
       }
+
+      /* Card layout for mobile */
+      @media (max-width: 768px) {
+        .cart-table,
+        .cart-table thead,
+        .cart-table tbody,
+        .cart-table th,
+        .cart-table td,
+        .cart-table tr {
+          display: block;
+        }
+
+        .cart-table thead tr {
+          display: none; /* hide table headers */
+        }
+
+        .cart-table tr {
+          margin-bottom: 15px;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          padding: 10px;
+        }
+
+        .cart-table td {
+          text-align: left;
+          padding: 6px 10px;
+          border: none;
+          position: relative;
+          padding-left: 50%;
+        }
+
+        .cart-table td::before {
+          position: absolute;
+          left: 10px;
+          width: 45%;
+          white-space: nowrap;
+          font-weight: bold;
+        }
+
+        .cart-table td:nth-of-type(1)::before {
+          content: "ID";
+        }
+        .cart-table td:nth-of-type(2)::before {
+          content: "Customer";
+        }
+        .cart-table td:nth-of-type(3)::before {
+          content: "Email";
+        }
+        .cart-table td:nth-of-type(4)::before {
+          content: "Address";
+        }
+        .cart-table td:nth-of-type(5)::before {
+          content: "Total";
+        }
+        .cart-table td:nth-of-type(6)::before {
+          content: "Date";
+        }
+        .cart-table td:nth-of-type(7)::before {
+          content: "Items";
+        }
+      }
     </style>
   </head>
   <body>
-    <nav style="text-align: center; margin-bottom: 20px">
-      <a href="shop.html" style="margin: 0 10px">Shop</a> |
-      <a href="cart.html" style="margin: 0 10px">Cart</a> |
-      <a href="checkout.html" style="margin: 0 10px">Checkout</a> |
-      <a href="orders.html" style="margin: 0 10px">Orders</a>
+    <nav>
+      <a href="shop.html">Shop</a> | <a href="cart.html">Cart</a> |
+      <a href="checkout.html">Checkout</a> |
+      <a href="orders.html">Orders</a>
     </nav>
 
     <h1>All Orders</h1>
 
-    <div class="orders-table-container">
-      <table class="cart-table" id="ordersTable">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Customer</th>
-            <th>Email</th>
-            <th>Address</th>
-            <th>Total</th>
-            <th>Date</th>
-            <th>Items</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <table class="cart-table" id="ordersTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Customer</th>
+          <th>Email</th>
+          <th>Address</th>
+          <th>Total</th>
+          <th>Date</th>
+          <th>Items</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
     <script>
       fetch("/api/orders")
@@ -59,10 +137,7 @@
           orders.forEach((order) => {
             const tr = document.createElement("tr");
 
-            // Use MongoDB _id
             const orderId = order._id.slice(0, 8);
-
-            // Items are already objects, no need to JSON.parse
             const itemsList = order.items
               .map((i) => `${i.name} x ${i.quantity}`)
               .join(", ");
