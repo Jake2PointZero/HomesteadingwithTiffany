@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shopping Cart</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <nav style="text-align: center; margin-bottom: 20px">
+      <a href="shop.html" style="margin: 0 10px">Shop</a> |
+      <a href="cart.html" style="margin: 0 10px">Cart</a> |
+      <a href="checkout.html" style="margin: 0 10px">Checkout</a>
+    </nav>
+
+    <h1>Your Cart</h1>
+    <table class="cart-table" id="cartTable">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Price</th>
+          <th>Quantity</th>
+          <th>Subtotal</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Cart items will be loaded here -->
+      </tbody>
+    </table>
+    <div class="cart-actions">
+      <h3>Total: $<span id="cartTotal">0.00</span></h3>
+      <button onclick="checkout()">Proceed to Checkout</button>
+    </div>
+
+    <script>
+      // Load cart from localStorage
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+      function renderCart() {
+        const tbody = document.querySelector("#cartTable tbody");
+        tbody.innerHTML = "";
+        let total = 0;
+
+        cart.forEach((item, index) => {
+          const subtotal = item.price * item.quantity;
+          total += subtotal;
+          const row = document.createElement("tr");
+          row.innerHTML = `
+          <td>${item.name}</td>
+          <td>$${item.price.toFixed(2)}</td>
+          <td>
+            <input type="number" value="${
+              item.quantity
+            }" min="1" style="width:50px" onchange="updateQuantity(${index}, this.value)">
+          </td>
+          <td>$${subtotal.toFixed(2)}</td>
+          <td><button onclick="removeItem(${index})">X</button></td>
+        `;
+          tbody.appendChild(row);
+        });
+
+        document.getElementById("cartTotal").textContent = total.toFixed(2);
+      }
+
+      function updateQuantity(index, quantity) {
+        cart[index].quantity = parseInt(quantity);
+        localStorage.setItem("cart", JSON.stringify(cart));
+        renderCart();
+      }
+
+      function removeItem(index) {
+        cart.splice(index, 1);
+        localStorage.setItem("cart", JSON.stringify(cart));
+        renderCart();
+      }
+
+      function checkout() {
+        if (cart.length === 0) {
+          alert("Your cart is empty!");
+          return;
+        }
+        // Save cart to localStorage for checkout page
+        localStorage.setItem("checkoutCart", JSON.stringify(cart));
+        window.location.href = "checkout.html";
+      }
+
+      renderCart();
+    </script>
+  </body>
+</html>

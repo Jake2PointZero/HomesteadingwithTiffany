@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Shop</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav>
+      <a href="shop.html">Shop</a> | <a href="cart.html">Cart</a> |
+      <a href="checkout.html">Checkout</a>
+    </nav>
+
+    <!-- Header -->
+    <h1>Welcome to My Shop</h1>
+
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+      <div class="hero-text">
+        <h2>Discover Our Handmade Products</h2>
+        <p>Candles, Soaps, Body Washes & More!</p>
+        <a href="#productsGrid" class="shop-now-btn">Shop Now</a>
+      </div>
+    </section>
+
+    <!-- Category Buttons -->
+    <div class="category-buttons">
+      <button class="category-btn" onclick="filterCategory('All')">All</button>
+      <button class="category-btn" onclick="filterCategory('Candles')">
+        Candles
+      </button>
+      <button class="category-btn" onclick="filterCategory('Sugar Scrubs')">
+        Sugar Scrubs
+      </button>
+      <button class="category-btn" onclick="filterCategory('Body Washes')">
+        Body Washes
+      </button>
+      <button class="category-btn" onclick="filterCategory('Soaps')">
+        Soaps
+      </button>
+      <button
+        class="category-btn"
+        onclick="filterCategory('Foaming Hand Soaps')"
+      >
+        Foaming Hand Soaps
+      </button>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products-grid" id="productsGrid">
+      <!-- Products will be loaded here -->
+    </div>
+
+    <script>
+      let allProducts = [];
+
+      // Fetch products from backend
+      fetch("http://localhost:5000/api/products")
+        .then((response) => response.json())
+        .then((products) => {
+          allProducts = products;
+          renderProducts(products);
+        })
+        .catch((err) => console.error("Error fetching products:", err));
+
+      function renderProducts(products) {
+        const grid = document.getElementById("productsGrid");
+        grid.innerHTML = "";
+        products.forEach((product) => {
+          const card = document.createElement("div");
+          card.className = "product-card";
+          card.innerHTML = `
+          <img src="${product.image}" alt="${product.name}">
+          <h3>${product.name}</h3>
+          <p>${product.description}</p>
+          <div class="price">$${product.price.toFixed(2)}</div>
+          <button onclick="addToCart(${product.id})">Add to Cart</button>
+        `;
+          grid.appendChild(card);
+        });
+      }
+
+      function filterCategory(category) {
+        // Highlight active button
+        document.querySelectorAll(".category-btn").forEach((btn) => {
+          btn.classList.remove("active");
+          if (btn.textContent === category) btn.classList.add("active");
+        });
+
+        // Filter products
+        if (category === "All") {
+          renderProducts(allProducts);
+        } else {
+          const filtered = allProducts.filter(
+            (p) => p.category.toLowerCase() === category.toLowerCase()
+          );
+          renderProducts(filtered);
+        }
+      }
+
+      // Add to Cart
+      function addToCart(productId) {
+        const product = allProducts.find((p) => p.id === productId);
+        if (!product) return;
+
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const existingItem = cart.find((item) => item.id === product.id);
+        if (existingItem) {
+          existingItem.quantity += 1;
+        } else {
+          cart.push({ ...product, quantity: 1 });
+        }
+        localStorage.setItem("cart", JSON.stringify(cart));
+        alert(`${product.name} added to cart!`);
+      }
+    </script>
+  </body>
+</html>

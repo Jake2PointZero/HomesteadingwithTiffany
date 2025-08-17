@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      body {
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      table {
+        width: 90%;
+        max-width: 900px;
+        margin: auto;
+        border-collapse: collapse;
+        margin-bottom: 40px;
+      }
+      table th,
+      table td {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #ccc;
+      }
+      table th {
+        background-color: #ff7f50;
+        color: white;
+      }
+      input[type="text"],
+      input[type="number"] {
+        width: 90%;
+        padding: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      button {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background-color: #ff7f50;
+        color: white;
+        font-weight: bold;
+      }
+      button:hover {
+        background-color: #ff6347;
+      }
+      form {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Admin Panel</h1>
+
+    <!-- Add New Product -->
+    <form id="addProductForm">
+      <input type="text" id="name" placeholder="Name" required />
+      <input type="text" id="description" placeholder="Description" required />
+      <input
+        type="number"
+        step="0.01"
+        id="price"
+        placeholder="Price"
+        required
+      />
+      <input type="text" id="category" placeholder="Category" required />
+      <input type="text" id="image" placeholder="Image URL" required />
+      <button type="submit">Add Product</button>
+    </form>
+
+    <!-- Product Table -->
+    <table id="productsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Category</th>
+          <th>Image</th>
+          <th>Edit</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script>
+      const tableBody = document.querySelector("#productsTable tbody");
+
+      // Fetch and display products
+      function loadProducts() {
+        fetch("http://localhost:5000/api/products")
+          .then((res) => res.json())
+          .then((products) => {
+            tableBody.innerHTML = "";
+            products.forEach((p) => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+              <td>${p.id}</td>
+              <td contenteditable="true" data-field="name">${p.name}</td>
+              <td contenteditable="true" data-field="description">${p.description}</td>
+              <td contenteditable="true" data-field="price">${p.price}</td>
+              <td contenteditable="true" data-field="category">${p.category}</td>
+              <td contenteditable="true" data-field="image">${p.image}</td>
+              <td><button onclick="updateProduct(${p.id}, this)">Save</button></td>
+            `;
+              tableBody.appendChild(tr);
+            });
+          });
+      }
+
+      loadProducts();
+
+      // Add new product
+      document
+        .getElementById("addProductForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const data = {
+            name: document.getElementById("name").value,
+            description: document.getElementById("description").value,
+            price: parseFloat(document.getElementById("price").value),
+            category: document.getElementById("category").value,
+            image: document.getElementById("image").value,
+          };
+
+          fetch("http://localhost:5000/api/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          })
+            .then((res) => res.json())
+            .then(() => {
+              alert("Product added!");
+              loadProducts();
+              this.reset();
+            });
+        });
+
+      // Update product
+      function updateProduct(id, btn) {
+        const row = btn.parentElement.parentElement;
+        const updatedData = {};
+        row.querySelectorAll("[contenteditable]").forEach((td) => {
+          const field = td.dataset.field;
+          let value = td.textContent;
+          if (field === "price") value = parseFloat(value);
+          updatedData[field] = value;
+        });
+
+        fetch(`http://localhost:5000/api/products/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedData),
+        })
+          .then((res) => res.json())
+          .then(() => {
+            alert("Product updated!");
+            loadProducts();
+          });
+      }
+    </script>
+  </body>
+</html>

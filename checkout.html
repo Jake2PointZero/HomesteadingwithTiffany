@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <nav style="text-align: center; margin-bottom: 20px">
+      <a href="shop.html" style="margin: 0 10px">Shop</a> |
+      <a href="cart.html" style="margin: 0 10px">Cart</a> |
+      <a href="checkout.html" style="margin: 0 10px">Checkout</a>
+    </nav>
+
+    <h1>Checkout</h1>
+
+    <div class="cart-summary" id="cartSummary">
+      <h3>Your Cart:</h3>
+      <ul id="cartItems"></ul>
+      <p>Total: $<span id="cartTotal">0.00</span></p>
+    </div>
+
+    <form id="checkoutForm">
+      <input type="text" id="customerName" placeholder="Full Name" required />
+      <input type="email" id="customerEmail" placeholder="Email" required />
+      <button type="submit">Place Order</button>
+    </form>
+
+    <script>
+      const cart = JSON.parse(localStorage.getItem("checkoutCart")) || [];
+      const cartItemsEl = document.getElementById("cartItems");
+      const cartTotalEl = document.getElementById("cartTotal");
+
+      // Display cart items
+      let total = 0;
+      cart.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = `${item.name} x ${item.quantity} - $${(
+          item.price * item.quantity
+        ).toFixed(2)}`;
+        cartItemsEl.appendChild(li);
+        total += item.price * item.quantity;
+      });
+      cartTotalEl.textContent = total.toFixed(2);
+
+      // Handle form submission
+      document
+        .getElementById("checkoutForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (cart.length === 0) {
+            alert("Your cart is empty!");
+            return;
+          }
+
+          const orderData = {
+            customerName: document.getElementById("customerName").value,
+            customerEmail: document.getElementById("customerEmail").value,
+            items: cart,
+            total: total,
+          };
+
+          fetch("http://localhost:5000/api/orders", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(orderData),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              alert(data.message || "Order placed successfully!");
+              localStorage.removeItem("cart");
+              localStorage.removeItem("checkoutCart");
+              window.location.href = "shop.html"; // redirect to shop
+            })
+            .catch((err) => {
+              console.error("Error placing order:", err);
+              alert("There was an error placing your order. Please try again.");
+            });
+        });
+    </script>
+  </body>
+</html>
