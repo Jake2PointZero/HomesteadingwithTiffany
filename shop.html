@@ -56,11 +56,8 @@
     <script>
       let allProducts = [];
 
-      // Use backend URL from environment or fallback
-      const backendUrl = "https://homesteadingwithtiffany.onrender.com"; // Replace with your Render URL
-
-      // Fetch products
-      fetch(`${backendUrl}/api/products`)
+      // Fetch products from Render backend
+      fetch("http://localhost:5000/api/products")
         .then((res) => res.json())
         .then((products) => {
           allProducts = products;
@@ -94,11 +91,10 @@
         if (category === "All") {
           renderProducts(allProducts);
         } else {
-          renderProducts(
-            allProducts.filter(
-              (p) => p.category.toLowerCase() === category.toLowerCase()
-            )
+          const filtered = allProducts.filter(
+            (p) => p.category.toLowerCase() === category.toLowerCase()
           );
+          renderProducts(filtered);
         }
       }
 
