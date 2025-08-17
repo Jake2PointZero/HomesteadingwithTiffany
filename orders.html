@@ -34,9 +34,7 @@
     </div>
 
     <script>
-      const BACKEND_URL = "https://homesteadingwithtiffany.onrender.com"; // adjust if using Render
-
-      fetch(`${BACKEND_URL}/api/orders`)
+      fetch(`/api/orders`)
         .then((res) => res.json())
         .then((orders) => {
           const tbody = document.querySelector("#ordersTable tbody");
