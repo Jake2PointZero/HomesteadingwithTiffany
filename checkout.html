@@ -24,6 +24,7 @@
     <form id="checkoutForm">
       <input type="text" id="customerName" placeholder="Full Name" required />
       <input type="email" id="customerEmail" placeholder="Email" required />
+      <input type="email" id="customerAddress" placeholder="Address" required />
       <button type="submit">Place Order</button>
     </form>
 
@@ -57,6 +58,7 @@
           const orderData = {
             customerName: document.getElementById("customerName").value,
             customerEmail: document.getElementById("customerEmail").value,
+            customerAddress: document.getElementById("customerAddress").value,
             items: cart,
             total: total,
           };
