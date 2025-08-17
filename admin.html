@@ -45,6 +45,7 @@
         background-color: #ff7f50;
         color: white;
         font-weight: bold;
+        margin: 2px;
       }
       button:hover {
         background-color: #ff6347;
@@ -84,7 +85,7 @@
           <th>Price</th>
           <th>Category</th>
           <th>Image</th>
-          <th>Edit</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -102,13 +103,22 @@
             products.forEach((p) => {
               const tr = document.createElement("tr");
               tr.innerHTML = `
-                <td>${p.id}</td>
+                <td>${p._id.slice(0, 8)}</td>
                 <td contenteditable="true" data-field="name">${p.name}</td>
-                <td contenteditable="true" data-field="description">${p.description}</td>
+                <td contenteditable="true" data-field="description">${
+                  p.description
+                }</td>
                 <td contenteditable="true" data-field="price">${p.price}</td>
-                <td contenteditable="true" data-field="category">${p.category}</td>
+                <td contenteditable="true" data-field="category">${
+                  p.category
+                }</td>
                 <td contenteditable="true" data-field="image">${p.image}</td>
-                <td><button onclick="updateProduct(${p.id}, this)">Save</button></td>
+                <td>
+                  <button onclick="updateProduct('${
+                    p._id
+                  }', this)">Save</button>
+                  <button onclick="deleteProduct('${p._id}')">Delete</button>
+                </td>
               `;
               tableBody.appendChild(tr);
             });
@@ -167,6 +177,21 @@
             loadProducts();
           })
           .catch((err) => console.error("Error updating product:", err));
+      }
+
+      // Delete product
+      function deleteProduct(id) {
+        if (!confirm("Are you sure you want to delete this product?")) return;
+
+        fetch(`/api/products/${id}`, {
+          method: "DELETE",
+        })
+          .then((res) => res.json())
+          .then(() => {
+            alert("Product deleted!");
+            loadProducts();
+          })
+          .catch((err) => console.error("Error deleting product:", err));
       }
     </script>
   </body>

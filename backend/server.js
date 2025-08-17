@@ -1,7 +1,7 @@
 // backend/server.js
 const express = require("express");
 const cors = require("cors");
-const sqlite3 = require("sqlite3").verbose();
+const mongoose = require("mongoose");
 const path = require("path");
 
 const app = express();
@@ -14,104 +14,95 @@ app.use(express.json());
 // Serve frontend files from main folder
 app.use(express.static(path.join(__dirname, "../"))); // ../ points to main project folder
 
-// Database setup (SQLite file stored in backend folder)
-const db = new sqlite3.Database(path.join(__dirname, "shop.db"), (err) => {
-  if (err) {
-    console.error("Error opening database:", err.message);
-  } else {
-    console.log("Connected to SQLite database.");
+// --- MongoDB Atlas Connection ---
+// Replace <username>, <password>, <cluster-url> with your MongoDB Atlas credentials
+mongoose.connect(
+  "mongodb+srv://masterchief316:R1LTpSPUoC1s1HZv@hwt.4jkuzpt.mongodb.net/shopDB?retryWrites=true&w=majority",
+  { useNewUrlParser: true, useUnifiedTopology: true }
+)
+.then(() => console.log("Connected to MongoDB Atlas"))
+.catch((err) => console.error("MongoDB connection error:", err));
 
-    // Create products table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        description TEXT,
-        price REAL,
-        category TEXT,
-        image TEXT
-      )
-    `);
-
-    // Create orders table
-db.run(`
-  CREATE TABLE IF NOT EXISTS orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    customerName TEXT NOT NULL,
-    customerEmail TEXT NOT NULL,
-    items TEXT NOT NULL,
-    total REAL NOT NULL,
-    createdAt TEXT NOT NULL,
-    address TEXT NOT NULL
-  )
-`);
-
-  }
+// --- Mongoose Schemas ---
+const productSchema = new mongoose.Schema({
+  name: String,
+  description: String,
+  price: Number,
+  category: String,
+  image: String,
 });
 
-// Routes
+const orderSchema = new mongoose.Schema({
+  customerName: String,
+  customerEmail: String,
+  address: String,
+  items: [{ name: String, quantity: Number, price: Number }],
+  total: Number,
+  createdAt: { type: Date, default: Date.now },
+});
+
+const Product = mongoose.model("Product", productSchema);
+const Order = mongoose.model("Order", orderSchema);
+
+// --- Routes ---
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
 
 // Get all products
-app.get("/api/products", (req, res) => {
-  db.all("SELECT * FROM products", [], (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-    } else {
-      res.json(rows);
-    }
-  });
+app.get("/api/products", async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
-
-// Get all orders
-app.get("/api/orders", (req, res) => {
-  db.all("SELECT * FROM orders ORDER BY createdAt DESC", [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(rows);
-  });
-});
-
 
 // Add a new product
-app.post("/api/products", (req, res) => {
-  const { name, description, price, category, image } = req.body;
-  db.run(
-    "INSERT INTO products (name, description, price, category, image) VALUES (?, ?, ?, ?, ?)",
-    [name, description, price, category, image],
-    function (err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-      } else {
-        res.json({ id: this.lastID, name, description, price, category, image });
-      }
-    }
-  );
+app.post("/api/products", async (req, res) => {
+  try {
+    const newProduct = new Product(req.body);
+    await newProduct.save();
+    res.json(newProduct);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Update product
-app.put("/api/products/:id", (req, res) => {
-  const { id } = req.params;
-  const { name, description, price, category, image } = req.body;
-  db.run(
-    "UPDATE products SET name = ?, description = ?, price = ?, category = ?, image = ? WHERE id = ?",
-    [name, description, price, category, image, id],
-    function(err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-      } else {
-        res.json({ message: "Product updated successfully!" });
-      }
-    }
-  );
+app.put("/api/products/:id", async (req, res) => {
+  try {
+    await Product.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ message: "Product updated successfully!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete product
+app.delete("/api/products/:id", async (req, res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ message: "Product deleted successfully!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 
+// Get all orders
+app.get("/api/orders", async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Place an order
-app.post("/api/orders", (req, res) => {
+app.post("/api/orders", async (req, res) => {
   const {
     customerName,
     customerEmail,
@@ -136,22 +127,22 @@ app.post("/api/orders", (req, res) => {
     return res.status(400).json({ message: "Missing order information." });
   }
 
-  const createdAt = new Date().toISOString();
-
   const fullAddress = `${customerStreet}, ${customerCity}, ${customerState}, ${customerZip}`;
 
-  db.run(
-    "INSERT INTO orders (customerName, customerEmail, items, total, createdAt, address) VALUES (?, ?, ?, ?, ?, ?)",
-    [customerName, customerEmail, JSON.stringify(items), total, createdAt, fullAddress],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ orderId: this.lastID, message: "Order placed successfully!" });
-    }
-  );
+  try {
+    const newOrder = new Order({
+      customerName,
+      customerEmail,
+      address: fullAddress,
+      items,
+      total,
+    });
+    await newOrder.save();
+    res.json({ orderId: newOrder._id, message: "Order placed successfully!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
-
-
-
 
 // Start server
 app.listen(PORT, () => {
