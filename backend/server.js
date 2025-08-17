@@ -34,16 +34,18 @@ const db = new sqlite3.Database(path.join(__dirname, "shop.db"), (err) => {
     `);
 
     // Create orders table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customerName TEXT,
-        customerEmail TEXT,
-        items TEXT,
-        total REAL,
-        createdAt TEXT
-      )
-    `);
+db.run(`
+  CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customerName TEXT NOT NULL,
+    customerEmail TEXT NOT NULL,
+    items TEXT NOT NULL,
+    total REAL NOT NULL,
+    createdAt TEXT NOT NULL,
+    address TEXT NOT NULL
+  )
+`);
+
   }
 });
 
@@ -62,6 +64,17 @@ app.get("/api/products", (req, res) => {
     }
   });
 });
+
+// Get all orders
+app.get("/api/orders", (req, res) => {
+  db.all("SELECT * FROM orders ORDER BY createdAt DESC", [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
 
 // Add a new product
 app.post("/api/products", (req, res) => {
@@ -99,20 +112,46 @@ app.put("/api/products/:id", (req, res) => {
 
 // Place an order
 app.post("/api/orders", (req, res) => {
-  const { customerName, customerEmail, items, total } = req.body;
+  const {
+    customerName,
+    customerEmail,
+    customerStreet,
+    customerCity,
+    customerState,
+    customerZip,
+    items,
+    total,
+  } = req.body;
+
+  if (
+    !customerName ||
+    !customerEmail ||
+    !customerStreet ||
+    !customerCity ||
+    !customerState ||
+    !customerZip ||
+    !items ||
+    !Array.isArray(items)
+  ) {
+    return res.status(400).json({ message: "Missing order information." });
+  }
+
   const createdAt = new Date().toISOString();
+
+  const fullAddress = `${customerStreet}, ${customerCity}, ${customerState}, ${customerZip}`;
+
   db.run(
-    "INSERT INTO orders (customerName, customerEmail, items, total, createdAt) VALUES (?, ?, ?, ?, ?)",
-    [customerName, customerEmail, JSON.stringify(items), total, createdAt],
+    "INSERT INTO orders (customerName, customerEmail, items, total, createdAt, address) VALUES (?, ?, ?, ?, ?, ?)",
+    [customerName, customerEmail, JSON.stringify(items), total, createdAt, fullAddress],
     function (err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-      } else {
-        res.json({ orderId: this.lastID, message: "Order placed successfully!" });
-      }
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ orderId: this.lastID, message: "Order placed successfully!" });
     }
   );
 });
+
+
+
 
 // Start server
 app.listen(PORT, () => {

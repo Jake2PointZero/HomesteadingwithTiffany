@@ -29,7 +29,6 @@
         required
         autocomplete="name"
       />
-
       <input
         type="email"
         id="customerEmail"
@@ -37,7 +36,6 @@
         required
         autocomplete="email"
       />
-
       <input
         type="text"
         id="customerStreet"
@@ -66,7 +64,6 @@
         required
         autocomplete="postal-code"
       />
-
       <button type="submit">Place Order</button>
     </form>
 
@@ -108,11 +105,10 @@
             total: total,
           };
 
-          fetch("https://homesteadingwithtiffany.onrender.com/api/products", {
+          // Correct URL for orders
+          fetch("https://homesteadingwithtiffany.onrender.com/api/orders", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(orderData),
           })
             .then((res) => res.json())
@@ -120,7 +116,7 @@
               alert(data.message || "Order placed successfully!");
               localStorage.removeItem("cart");
               localStorage.removeItem("checkoutCart");
-              window.location.href = "shop.html"; // redirect to shop
+              window.location.href = "shop.html";
             })
             .catch((err) => {
               console.error("Error placing order:", err);

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orders</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <nav style="text-align: center; margin-bottom: 20px">
+      <a href="shop.html" style="margin: 0 10px">Shop</a> |
+      <a href="cart.html" style="margin: 0 10px">Cart</a> |
+      <a href="checkout.html" style="margin: 0 10px">Checkout</a> |
+      <a href="orders.html" style="margin: 0 10px">Orders</a>
+    </nav>
+
+    <h1>All Orders</h1>
+
+    <div class="orders-table-container">
+      <table class="cart-table" id="ordersTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>Total</th>
+            <th>Date</th>
+            <th>Items</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <script>
+      const BACKEND_URL = "https://homesteadingwithtiffany.onrender.com"; // adjust if using Render
+
+      fetch(`${BACKEND_URL}/api/orders`)
+        .then((res) => res.json())
+        .then((orders) => {
+          const tbody = document.querySelector("#ordersTable tbody");
+          orders.forEach((order) => {
+            const tr = document.createElement("tr");
+
+            // Convert JSON string of items into readable list
+            let itemsList = "";
+            try {
+              const items = JSON.parse(order.items);
+              itemsList = items
+                .map((i) => `${i.name} x ${i.quantity}`)
+                .join(", ");
+            } catch (e) {
+              itemsList = order.items;
+            }
+
+            tr.innerHTML = `
+            <td>${order.id}</td>
+            <td>${order.customerName}</td>
+            <td>${order.customerEmail}</td>
+            <td>${order.address}</td>
+            <td>$${order.total.toFixed(2)}</td>
+            <td>${new Date(order.createdAt).toLocaleString()}</td>
+            <td>${itemsList}</td>
+          `;
+            tbody.appendChild(tr);
+          });
+        })
+        .catch((err) => console.error("Error fetching orders:", err));
+    </script>
+  </body>
+</html>
