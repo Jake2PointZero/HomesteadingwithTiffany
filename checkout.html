@@ -22,9 +22,51 @@
     </div>
 
     <form id="checkoutForm">
-      <input type="text" id="customerName" placeholder="Full Name" required />
-      <input type="email" id="customerEmail" placeholder="Email" required />
-      <textarea id="customerAddress" placeholder="Address" required></textarea>
+      <input
+        type="text"
+        id="customerName"
+        placeholder="Full Name"
+        required
+        autocomplete="name"
+      />
+
+      <input
+        type="email"
+        id="customerEmail"
+        placeholder="Email"
+        required
+        autocomplete="email"
+      />
+
+      <input
+        type="text"
+        id="customerStreet"
+        placeholder="Street Address"
+        required
+        autocomplete="street-address"
+      />
+      <input
+        type="text"
+        id="customerCity"
+        placeholder="City"
+        required
+        autocomplete="address-level2"
+      />
+      <input
+        type="text"
+        id="customerState"
+        placeholder="State / Province"
+        required
+        autocomplete="address-level1"
+      />
+      <input
+        type="text"
+        id="customerZip"
+        placeholder="ZIP / Postal Code"
+        required
+        autocomplete="postal-code"
+      />
+
       <button type="submit">Place Order</button>
     </form>
 
@@ -58,7 +100,10 @@
           const orderData = {
             customerName: document.getElementById("customerName").value,
             customerEmail: document.getElementById("customerEmail").value,
-            customerAddress: document.getElementById("customerAddress").value,
+            customerStreet: document.getElementById("customerStreet").value,
+            customerCity: document.getElementById("customerCity").value,
+            customerState: document.getElementById("customerState").value,
+            customerZip: document.getElementById("customerZip").value,
             items: cart,
             total: total,
           };
