@@ -15,11 +15,10 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "../"))); // ../ points to main project folder
 
 // --- MongoDB Atlas Connection ---
-// Replace <username>, <password>, <cluster-url> with your MongoDB Atlas credentials
-mongoose.connect(
-  "mongodb+srv://masterchief316:R1LTpSPUoC1s1HZv@hwt.4jkuzpt.mongodb.net/shopDB?retryWrites=true&w=majority",
-  { useNewUrlParser: true, useUnifiedTopology: true }
-)
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
 .then(() => console.log("Connected to MongoDB Atlas"))
 .catch((err) => console.error("MongoDB connection error:", err));
 
