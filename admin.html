@@ -150,7 +150,14 @@
         placeholder="Price"
         required
       />
-      <input type="text" id="category" placeholder="Category" required />
+      <select id="category" required>
+        <option value="">Select Category</option>
+        <option value="Candles">Candles</option>
+        <option value="Sugar Scrubs">Sugar Scrubs</option>
+        <option value="Body Washes">Body Washes</option>
+        <option value="Soaps">Soaps</option>
+        <option value="Foaming Hand Soaps">Foaming Hand Soaps</option>
+      </select>
       <input type="text" id="image" placeholder="Image URL" required />
       <button type="submit">Add Product</button>
     </form>
