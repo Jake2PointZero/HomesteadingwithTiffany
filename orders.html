@@ -106,13 +106,18 @@
     </style>
   </head>
   <body>
-    <nav>
-      <a href="shop.html">Shop</a> | <a href="cart.html">Cart</a> |
-      <a href="checkout.html">Checkout</a> |
-      <a href="orders.html">Orders</a>
-    </nav>
+    <script>
+      if (localStorage.getItem("isAdmin") !== "true") {
+        window.location.href = "admin.html";
+      }
+    </script>
 
     <h1>All Orders</h1>
+    <nav>
+      <a href="admindashboard.html">Admin Dashboard</a> |
+      <a href="addproduct.html">Add Product</a> |
+      <a href="orders.html">View Orders</a>
+    </nav>
 
     <table class="cart-table" id="ordersTable">
       <thead>

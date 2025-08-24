@@ -8,6 +8,8 @@ require("dotenv").config();
 const app = express();
 const PORT = 5000;
 const MONGODB_URI = process.env.MONGO_URI;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 // Middleware
 app.use(cors());
@@ -50,6 +52,21 @@ app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
 
+// --- Admin Check ---
+app.post("/admin/login", (req, res) => {
+  const { username, password } = req.body;
+
+  if (
+    username === process.env.ADMIN_USERNAME &&
+    password === process.env.ADMIN_PASSWORD
+  ) {
+    // success – send back a session marker
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false, message: "Invalid credentials" });
+  }
+});
+
 // Get all products
 app.get("/api/products", async (req, res) => {
   try {
@@ -59,6 +76,8 @@ app.get("/api/products", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 // Add a new product
 app.post("/api/products", async (req, res) => {

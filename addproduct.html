@@ -8,8 +8,18 @@
     <link rel="stylesheet" href="css/addproductstyles.css" />
   </head>
   <body>
-    <h1>Admin Panel</h1>
+    <script>
+      if (localStorage.getItem("isAdmin") !== "true") {
+        window.location.href = "admin.html";
+      }
+    </script>
 
+    <h1>Admin Panel</h1>
+    <nav>
+      <a href="admindashboard.html">Admin Dashboard</a> |
+      <a href="addproduct.html">Add Product</a> |
+      <a href="orders.html">View Orders</a>
+    </nav>
     <!-- Add New Product -->
     <form id="addProductForm">
       <input type="text" id="name" placeholder="Name" required />
